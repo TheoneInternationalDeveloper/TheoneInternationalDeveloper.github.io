@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "Y9S9W59645.com.baedalpartner.mobile.dev",
+        "paths": ["/post/*", "/user/*"]
+      }
+    ]
+  }
+}
