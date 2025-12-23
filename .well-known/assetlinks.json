@@ -3,9 +3,29 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
+      "package_name": "com.baedalpartner.mobile",
+      "sha256_cert_fingerprints": [
+        "TODO: Add production SHA256 fingerprint"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
       "package_name": "com.baedalpartner.mobile.dev",
       "sha256_cert_fingerprints": [
-        "TODO: Add your SHA256 fingerprint here"
+        "TODO: Add dev SHA256 fingerprint (run: ./gradlew signingReport)"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.baedalpartner.mobile.stg",
+      "sha256_cert_fingerprints": [
+        "TODO: Add staging SHA256 fingerprint"
       ]
     }
   }
