@@ -11,29 +11,72 @@
     const path = window.location.pathname;
     const search = window.location.search;
 
-    // /post/* 또는 /user/* 경로 확인
-    const isPostPath = path.startsWith('/post/');
-    const isUserPath = path.startsWith('/user/');
+    // 커스텀 스킴 URL 생성
+    const customSchemeUrl = 'baedaljangbu:/' + path + search;
 
-    function redirectToStore() {
-      const userAgent = navigator.userAgent || navigator.vendor;
-      if (/iPad|iPhone|iPod/.test(userAgent)) {
-        window.location.href = 'https://apps.apple.com/app/id6754678998';
-      } else if (/android/i.test(userAgent)) {
-        window.location.href = 'https://play.google.com/store/apps/details?id=com.baedalpartner.mobile';
+    // 앱스토어 URL
+    const iosStoreUrl = 'https://apps.apple.com/app/id6754678998';
+    const androidStoreUrl = 'https://play.google.com/store/apps/details?id=com.baedalpartner.mobile';
+
+    // Android Intent URL (더 안정적인 앱 열기)
+    const androidIntentUrl = 'intent:/' + path + search +
+      '#Intent;scheme=baedaljangbu;package=com.baedalpartner.mobile;end';
+
+    function getUserAgent() {
+      return navigator.userAgent || navigator.vendor;
+    }
+
+    function isIOS() {
+      return /iPad|iPhone|iPod/.test(getUserAgent());
+    }
+
+    function isAndroid() {
+      return /android/i.test(getUserAgent());
+    }
+
+    function tryOpenApp() {
+      const startTime = Date.now();
+
+      if (isAndroid()) {
+        // Android: Intent URL 사용
+        window.location.href = androidIntentUrl;
+      } else if (isIOS()) {
+        // iOS: 커스텀 스킴 시도
+        window.location.href = customSchemeUrl;
+
+        // 2초 후에도 페이지에 있으면 앱이 없는 것으로 간주
+        setTimeout(function() {
+          // 페이지가 아직 보이면 (앱이 안 열렸으면) 스토어로 이동
+          if (document.visibilityState !== 'hidden' && Date.now() - startTime < 3000) {
+            window.location.href = iosStoreUrl;
+          }
+        }, 2000);
       } else {
+        // 기타 기기
         document.getElementById('message').style.display = 'block';
+        document.getElementById('loading').style.display = 'none';
       }
     }
 
-    // Universal Links/App Links가 처리되지 않으면 스토어로 리다이렉트
-    // (앱이 설치되어 있으면 이 페이지가 보이기 전에 앱이 열림)
-    if (isPostPath || isUserPath) {
-      setTimeout(redirectToStore, 1500);
-    } else {
-      // 알 수 없는 경로는 바로 스토어로
-      setTimeout(redirectToStore, 500);
-    }
+    // 페이지 로드 시 앱 열기 시도
+    document.addEventListener('DOMContentLoaded', function() {
+      // /post/* 또는 /user/* 경로인 경우에만 앱 열기 시도
+      if (path.startsWith('/post/') || path.startsWith('/user/')) {
+        setTimeout(tryOpenApp, 100);
+      } else {
+        // 다른 경로는 바로 스토어로
+        setTimeout(function() {
+          if (isIOS()) {
+            window.location.href = iosStoreUrl;
+          } else if (isAndroid()) {
+            window.location.href = androidStoreUrl;
+          } else {
+            document.getElementById('message').style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+          }
+        }, 500);
+      }
+    });
   </script>
   <style>
     body {
@@ -64,19 +107,34 @@
     @keyframes spin { to { transform: rotate(360deg); } }
     #message { display: none; margin-top: 20px; }
     a { color: white; }
+    .store-btn {
+      display: inline-block;
+      padding: 12px 24px;
+      margin: 8px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+      text-decoration: none;
+      color: white;
+      font-weight: 500;
+    }
+    .store-btn:hover {
+      background: rgba(255,255,255,0.3);
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>배달장부</h1>
-    <p>배달장부 앱으로 이동 중...</p>
-    <div class="spinner"></div>
+    <div id="loading">
+      <p>배달장부 앱으로 이동 중...</p>
+      <div class="spinner"></div>
+    </div>
     <div id="message">
-      <p>앱을 설치해주세요</p>
-      <p>
-        <a href="https://apps.apple.com/app/id6754678998">iOS 다운로드</a> |
-        <a href="https://play.google.com/store/apps/details?id=com.baedalpartner.mobile">Android 다운로드</a>
-      </p>
+      <p>앱을 설치하고 다시 시도해주세요</p>
+      <div style="margin-top: 20px;">
+        <a href="https://apps.apple.com/app/id6754678998" class="store-btn">App Store</a>
+        <a href="https://play.google.com/store/apps/details?id=com.baedalpartner.mobile" class="store-btn">Play Store</a>
+      </div>
     </div>
   </div>
 </body>
